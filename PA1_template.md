@@ -6,7 +6,8 @@ output:
 ---
 
 ## Loading and preprocessing the data
-```{r, echo=TRUE}
+
+```r
 if (!file.exists("./data/activity.csv")) {
     url = "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
     download.file(url, destfile="./data/archived_data.zip", method="curl")
@@ -20,34 +21,57 @@ d$date <- as.Date(d$date, format="%Y-%m-%d")
 
 
 ## What is mean total number of steps taken per day?
-```{r, echo=TRUE}
+
+```r
 d.complete <- na.omit(d)
 dailySteps <- tapply(d.complete$steps, d.complete$date, sum)
 hist(dailySteps, xlab="Steps", main="Histogram of Daily Steps")
+```
+
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
+
+```r
 mean(dailySteps)
+```
+
+```
+## [1] 10766
+```
+
+```r
 median(dailySteps)
+```
+
+```
+## [1] 10765
 ```
 
 
 ## What is the average daily activity pattern?
-```{r, echo=TRUE}
+
+```r
 intervalMeanSteps <- tapply(d.complete$steps, d.complete$interval, mean)
 plot(rownames(intervalMeanSteps), intervalMeanSteps, type="l", 
      xlab="Interval", ylab="Steps", main="Average Steps per 5-Minute Interval")
+```
 
+![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3.png) 
+
+```r
 maxIndex <- which.max(intervalMeanSteps)
 maxInterval <- rownames(intervalMeanSteps)[maxIndex]
 ```
 
-The interval with the highest mean number of steps per day is `r maxInterval` 
-where the individual averaged `r intervalMeanSteps[maxIndex]` steps.
+The interval with the highest mean number of steps per day is 835 
+where the individual averaged 206.1698 steps.
 
 ## Imputing missing values
-```{r, echo=TRUE}
+
+```r
 numMissingVals <- nrow(subset(d, is.na(steps)))
 ```
 
-There are `r numMissingVals` missing values.  
+There are 2304 missing values.  
 
 **Strategy for Replacing Missing Values**
 
@@ -55,7 +79,8 @@ There are `r numMissingVals` missing values.
 values with the median values for the 5-minute time period to which they 
 belong.*
 
-```{r, echo=TRUE, results="hide"}
+
+```r
 intervalMedianSteps <- tapply(d$steps, d$interval, median, na.rm=TRUE)
 impData <- d
 
@@ -78,24 +103,51 @@ impDailySteps <- tapply(impData$steps,
 The histograms for the imputed data appear increases the number of days in the
 0-5000 step bucket by about 8. Everything else appears similar.
 
-```{r, echo=TRUE}
+
+```r
 par(mfrow=c(1,2))
 hist(dailySteps, xlab="Steps", main="Daily Steps")
 hist(impDailySteps, xlab="Steps", main="Imputed Daily Steps")
 ```
 
+![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+
 The mean imputed steps per day are 1262 less than the mean non-imputed steps.
 
-```{r, echo=TRUE}
+
+```r
 mean(impDailySteps)
+```
+
+```
+## [1] 9504
+```
+
+```r
 mean(impDailySteps) - mean(dailySteps)
+```
+
+```
+## [1] -1262
 ```
 
 The median for imputed and non-imputed steps is the same.
 
-```{r, echo=TRUE}
+
+```r
 median(impDailySteps)
+```
+
+```
+## [1] 10395
+```
+
+```r
 median(impDailySteps) - median(impDailySteps)
+```
+
+```
+## [1] 0
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -105,7 +157,8 @@ hours when compared with the activity on the weekend.  It also appears the
 individual was more active after presumably waking up in the morning on 
 weekdays when compared with weekends.
 
-```{r, echo=TRUE, results="hide"}
+
+```r
 # Create "day" vector to delineate weekdays from weekend days
 day <- as.character(weekdays(impData$date))
 
@@ -136,3 +189,5 @@ library(lattice)
 xyplot(steps ~ interval | day, data = aggData, layout = c(1,2), type='l',
        xlab="Interval", ylab="Number of steps")
 ```
+
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
